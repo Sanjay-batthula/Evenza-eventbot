@@ -6,7 +6,6 @@ import io
 import os
 from dotenv import load_dotenv
 import html
-from features import EventFeatures
 
 # Load environment variables
 load_dotenv()
@@ -269,35 +268,3 @@ if user_input:
     
     # Rerun to update the UI
     st.rerun()
-
-# Initialize features in session state
-if 'features' not in st.session_state:
-    st.session_state.features = EventFeatures()
-
-# Add to your sidebar or main interface
-with st.sidebar:
-    st.subheader("📍 Quick Navigation")
-    location = st.selectbox(
-        "Find Location:",
-        options=list(st.session_state.features.locations.keys())
-    )
-    if location:
-        st.info(st.session_state.features.get_location_info(location))
-    
-    st.subheader("⏰ Next Event")
-    st.write(st.session_state.features.time_until_next_event())
-
-# Add participant tracking (optional)
-if st.session_state.get("user_id"):
-    current_location = st.selectbox(
-        "Update your location:",
-        options=list(st.session_state.features.locations.keys())
-    )
-    if current_location:
-        st.session_state.features.track_participant(
-            st.session_state.user_id,
-            current_location
-        )
-        nearby = st.session_state.features.get_nearby_participants(current_location)
-        if nearby:
-            st.write(f"Participants in same location: {len(nearby)}")
