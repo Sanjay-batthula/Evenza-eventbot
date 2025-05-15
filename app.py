@@ -6,6 +6,8 @@ import io
 import os
 from dotenv import load_dotenv
 import html
+from datetime import datetime, time
+import pytz
 
 # Load environment variables
 load_dotenv()
@@ -30,6 +32,10 @@ class EventAssistantBot:
 
 Remember: You are EVENZA, the next generation of event assistance, focused on making every interaction valuable and informative.
         """
+        self.lunch_time = time(13, 0)  # 1:00 PM
+        self.lunch_end_time = time(14, 0)  # 2:00 PM
+        self.event_date = datetime(2025, 5, 18).date()  # Event date
+        self.india_tz = pytz.timezone('Asia/Kolkata')
 
     def extract_pdf(self, pdf_path):
         """Extract text from the provided PDF file."""
@@ -82,7 +88,58 @@ Remember: You are EVENZA, the next generation of event assistance, focused on ma
         return response
 
     def answer_question(self, query):
-        """Use Google Gemini to answer a question based on PDF context."""
+        """Handle questions and generate responses."""
+        # Check for lunch time related queries
+        lunch_keywords = ["lunch", "food", "eat", "meal", "time until lunch", "when is lunch"]
+        if any(keyword in query.lower() for keyword in lunch_keywords):
+            time_info = self.get_time_until_lunch()
+            current_time = datetime.now(self.india_tz)
+            
+            if current_time.date() == self.event_date:
+                current_hour = current_time.hour
+                current_min = current_time.minute
+                
+                # Create a visual progress bar for time until lunch
+                if current_hour < 13:
+                    total_mins = (13 - current_hour) * 60 - current_min
+                    progress = "🕐 Time until lunch:\n"
+                    progress += "\n⏳ Progress: "
+                    blocks = "█" * (12 - current_hour) + "░" * (current_hour)
+                    progress += f"{blocks} {time_info}\n"
+                elif 13 <= current_hour < 14:
+                    progress = "🍽️ Lunch is happening now!\n"
+                    progress += "\n⌛ Status: "
+                    mins_left = 60 - current_min
+                    blocks = "█" * (60 - mins_left) + "░" * mins_left
+                    progress += f"{blocks}\n"
+                else:
+                    progress = "Lunch time has ended for today!"
+
+                lunch_details = f"""
+{progress}
+
+📍 Lunch Details:
+• Location: Cafeteria (5th floor)
+• Time: 1:00 PM - 2:00 PM IST
+• Status: {time_info}
+• Note: Remember to check-in at registration!
+
+Need directions? Just ask! 🗺️
+"""
+            else:
+                lunch_details = f"""
+🗓️ Event Date: May 18, 2025
+
+Lunch will be served:
+• Time: 1:00 PM - 2:00 PM IST
+• Location: Cafeteria (5th floor)
+• Duration: 1 hour
+• Note: Don't forget to check-in first!
+
+{time_info}
+"""
+            return lunch_details
+
         try:
             # Combine the query with the context for the AI
             combined_prompt = f"Event information: {self.pdf_text}\n\nQuestion: {query}\n\nRemember to follow these guidelines:\n{self.system_prompt}"
@@ -124,6 +181,33 @@ Remember: You are EVENZA, the next generation of event assistance, focused on ma
                 
         except Exception as e:
             return f"An error occurred: {str(e)}"
+
+    def get_time_until_lunch(self):
+        """Calculate time remaining until lunch."""
+        current_time = datetime.now(self.india_tz)
+        
+        # Check if today is event day
+        if current_time.date() != self.event_date:
+            return "The event is scheduled for May 18, 2025. Lunch will be served from 1:00 PM to 2:00 PM."
+            
+        current_time = current_time.time()
+        
+        # If before lunch
+        if current_time < self.lunch_time:
+            time_diff = datetime.combine(datetime.today(), self.lunch_time) - datetime.combine(datetime.today(), current_time)
+            hours, remainder = divmod(time_diff.seconds, 3600)
+            minutes, _ = divmod(remainder, 60)
+            return f"🕐 {hours} hours and {minutes} minutes until lunch (1:00 PM - 2:00 PM)"
+            
+        # If during lunch
+        elif self.lunch_time <= current_time <= self.lunch_end_time:
+            time_diff = datetime.combine(datetime.today(), self.lunch_end_time) - datetime.combine(datetime.today(), current_time)
+            minutes = time_diff.seconds // 60
+            return f"🍽️ Lunch is currently being served! {minutes} minutes remaining until lunch ends."
+            
+        # If after lunch
+        else:
+            return "⏰ Lunch time (1:00 PM - 2:00 PM) has ended for today."
 
 # Set page configuration
 st.set_page_config(
