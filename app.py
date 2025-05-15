@@ -174,23 +174,18 @@ if "bot" not in st.session_state:
     #this si welcome
     # Add welcome message with options
     if not st.session_state.messages:
-        welcome_message = """✨ Welcome to EVENZA! 
-
-I'm your personal AI Event Assistant, here to make your workshop experience amazing! 
-
-🎯 What would you like to know about?
-
-1. 🎓 Workshop Agenda & Schedule
+        welcome_message = """✨ Hello! I'm your personal AI Event Assistant, here to make your workshop experience amazing!\n"""
+        what_to_know = """🎯 What would you like to know about:\n"""
+        welcome_options = """1. 🎓 Workshop Agenda & Schedule
 2. 📅 Important Dates & Deadlines
 3. 🏆 AI Hackathon Challenge Details
 4. 🚀 Featured AI/ML Projects
 5. 🗺️ Venue Navigation & Facilities
-6. 🍽️ Dining & Refreshments
-
-Feel free to ask me anything about the event! I'm here to help you make the most of this experience."""
+6. 🍽️ Dining & Refreshments\n"""
+        footer = """💬 Feel free to ask me anything about the event!"""
         
         st.session_state.messages.append(
-            {"role": "assistant", "content": welcome_message}
+            {"role": "assistant", "content": welcome_message + what_to_know + welcome_options + footer}
         )
 
 # Add additional CSS to fix spacing issues
@@ -198,21 +193,22 @@ st.markdown("""
 <style>
 .bot-message {
     white-space: pre-line !important;
-    line-height: 1.5 !important;
+    line-height: 1.2 !important;
     margin-bottom: 0 !important;
+    padding: 5px !important;
+}
+.message-container {
+    margin: 5px 0 !important;
+    padding: 5px !important;
 }
 .bot-message ol {
-    margin-top: 8px !important;
-    margin-bottom: 8px !important;
-    padding-left: 25px !important;
+    margin: 5px 0 !important;
+    padding-left: 20px !important;
 }
 .bot-message li {
-    margin-bottom: 6px !important;
-    padding-bottom: 0 !important;
-    line-height: 1.4 !important;
-}
-.bot-message p {
-    margin-bottom: 10px !important;
+    margin: 2px 0 !important;
+    padding: 0 !important;
+    line-height: 1.2 !important;
 }
 </style>
 """, unsafe_allow_html=True)
