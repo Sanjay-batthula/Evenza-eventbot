@@ -15,21 +15,20 @@ class EventAssistantBot:
         self.api_key = api_key
         self.pdf_text = self.extract_pdf(pdf_path)
         self.system_prompt = """
-        You are a friendly Event Information Assistant. Your primary purpose is to answer questions about the event described in the provided context. Follow these guidelines:
+        You are EVENZA, an advanced AI Event Assistant. Your primary purpose is to enhance the event experience by providing accurate and helpful information. Follow these guidelines:
 
-1. You can respond to basic greetings like "hi", "hello", or "how are you" in a warm, welcoming manner
-2. For event information, only provide details that are present in the context
-3. If information is not in the context, politely say "I'm sorry, I don't have that specific information about the event"
-4. Keep responses concise but conversational
-5. Do not make assumptions beyond what's explicitly stated in the context
-6. Always prioritize factual accuracy while maintaining a helpful tone
-7. Do not introduce information that isn't in the context
-8. If unsure about any information, acknowledge uncertainty rather than guess
-9. You may suggest a few general questions users might want to ask about the event
-10. Remember to maintain a warm, friendly tone in all interactions
-11. You should refer to yourself as "Event Bot"
+1. Always identify yourself as "EVENZA" when greeting users
+2. Maintain a professional yet friendly tone
+3. For event information, only provide details from the context
+4. Keep responses concise but engaging
+5. Use emojis appropriately to enhance communication
+6. If information isn't available, say "I apologize, but I don't have that specific information in my database"
+7. Prioritize accuracy while maintaining a helpful demeanor
+8. Suggest relevant follow-up questions when appropriate
+9. Format responses for easy readability
+10. Focus on creating a positive user experience
 
-Remember: While you can be conversational, your primary role is providing accurate information about this specific event based on the context provided.
+Remember: You are EVENZA, the next generation of event assistance, focused on making every interaction valuable and informative.
         """
 
     def extract_pdf(self, pdf_path):
@@ -128,8 +127,8 @@ Remember: While you can be conversational, your primary role is providing accura
 
 # Set page configuration
 st.set_page_config(
-    page_title="Build with AI - Event Bot",
-    page_icon="🎫",
+    page_title="EVENZA - Your AI Event Guide",
+    page_icon="✨",
     layout="centered"
 )
 
@@ -143,8 +142,12 @@ def load_css(css_file):
 css = load_css("styles.css")
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
-# Main app title
-st.title("Build with AI - Event Bot")
+# Main app title with styling
+st.markdown("""
+    <h1 style='text-align: center; color: #1E88E5; margin-bottom: 30px;'>
+        ✨ EVENZA - Your AI Event Guide
+    </h1>
+""", unsafe_allow_html=True)
 
 # Initialize session state for chat history
 if "messages" not in st.session_state:
@@ -170,16 +173,20 @@ if "bot" not in st.session_state:
     #this si welcome
     # Add welcome message with options
     if not st.session_state.messages:
-        welcome_message = """Hello! I'm Event bot.
-I can help you with the following:
-1. Agenda of the "Build with AI" workshop
-2. Important Dates of this workshop
-3. Details of the AI Hackathon
-4. Presentation of Interesting projects in AI, ML
-5. Locating the washrooms
-6. Details of lunch at the venue
+        welcome_message = """✨ Welcome to EVENZA! 
 
-How can I help you with information about this event?"""
+I'm your personal AI Event Assistant, here to make your workshop experience amazing! 
+
+🎯 What would you like to know about?
+
+1. 🎓 Workshop Agenda & Schedule
+2. 📅 Important Dates & Deadlines
+3. 🏆 AI Hackathon Challenge Details
+4. 🚀 Featured AI/ML Projects
+5. 🗺️ Venue Navigation & Facilities
+6. 🍽️ Dining & Refreshments
+
+Feel free to ask me anything about the event! I'm here to help you make the most of this experience."""
         
         st.session_state.messages.append(
             {"role": "assistant", "content": welcome_message}
