@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 import html
 from datetime import datetime, time
 import pytz
+from googletrans import Translator
+import streamlit as st
 
 # Load environment variables
 load_dotenv()
@@ -36,6 +38,19 @@ Remember: You are EVENZA, the next generation of event assistance, focused on ma
         self.lunch_end_time = time(14, 0)  # 2:00 PM
         self.event_date = datetime(2025, 5, 18).date()  # Event date
         self.india_tz = pytz.timezone('Asia/Kolkata')
+        self.translator = Translator()
+        self.telugu_slang_dict = {
+            "Hello": "Ela unnaru",
+            "How are you": "Baunnara",
+            "Welcome": "Suswaagatham",
+            "Thank you": "Dhanyavaadalu",
+            "Food": "Tindhi",
+            "Time": "Samayam",
+            "Event": "Karyakramam",
+            "Where": "Ekkada",
+            "When": "Eppudu",
+            # Add more slang translations as needed
+        }
 
     def extract_pdf(self, pdf_path):
         """Extract text from the provided PDF file."""
@@ -87,7 +102,21 @@ Remember: You are EVENZA, the next generation of event assistance, focused on ma
         # For other responses, just return the original
         return response
 
-    def answer_question(self, query):
+    def answer_question(self, query, target_lang="en"):
+        """Modified answer_question method with translation support."""
+        # Translate query to English for processing
+        if target_lang != "en" and target_lang != "tenglish":
+            eng_query = self.translator.translate(query, dest="en").text
+        else:
+            eng_query = query
+
+        # Get response in English
+        response = self._answer_question(eng_query)
+
+        # Translate response to target language
+        return self.translate_text(response, target_lang)
+
+    def _answer_question(self, query):
         """Handle questions and generate responses."""
         # Check for lunch time related queries
         lunch_keywords = ["lunch", "food", "eat", "meal", "time until lunch", "when is lunch"]
@@ -209,11 +238,47 @@ Lunch will be served:
         else:
             return "⏰ Lunch time (1:00 PM - 2:00 PM) has ended for today."
 
+    def translate_text(self, text, target_lang):
+        """Translate text to target language."""
+        try:
+            if target_lang == "tenglish":
+                # Handle Telugu slang in English
+                for eng, slang in self.telugu_slang_dict.items():
+                    text = text.replace(eng, slang)
+                return text
+            elif target_lang != "en":
+                translation = self.translator.translate(text, dest=target_lang)
+                return translation.text
+            return text
+        except Exception as e:
+            st.error(f"Translation error: {str(e)}")
+            return text
+
+def initialize_languages():
+    return {
+        "English": "en",
+        "Telugu": "te",
+        "Hindi": "hi",
+        "French": "fr",
+        "Spanish": "es",
+        "Italian": "it",
+        "Telugu Slang (English)": "tenglish"  # Custom code for Telugu slang in English
+    }
+
 # Set page configuration
 st.set_page_config(
     page_title="EVENZA - Your AI Event Guide",
     page_icon="✨",
     layout="centered"
+)
+
+# Language selector sidebar
+st.sidebar.header("🌐 Language Settings")
+languages = initialize_languages()
+selected_language = st.sidebar.selectbox(
+    "Choose your preferred language",
+    list(languages.keys()),
+    index=0
 )
 
 # Load the CSS from the external file
@@ -257,7 +322,18 @@ if "bot" not in st.session_state:
     #this si welcome
     # Add welcome message with options
     if not st.session_state.messages:
-        welcome_message = """✨ Hello! I'm your personal AI Event Assistant, here to make your workshop experience amazing!\n"""
+        welcome_messages = {
+            "en": """✨ Hello! I'm your personal AI Event Assistant, here to make your workshop experience amazing!""",
+            "te": """✨ నమస్కారం! నేను మీ వ్యక్తిగత AI ఈవెంట్ అసిస్టెంట్ని, మీ వర్క్‌షాప్ అనుభవాన్ని అద్భుతంగా మార్చడానికి ఇక్కడ ఉన్నాను!""",
+            "hi": """✨ नमस्ते! मैं आपका पर्सनल AI इवेंट असिस्टेंट हूं, आपके वर्कशॉप अनुभव को शानदार बनाने के लिए यहां हूं!""",
+            "fr": """✨ Bonjour! Je suis votre assistant AI personnel pour l'événement, ici pour rendre votre expérience d'atelier incroyable!""",
+            "es": """✨ ¡Hola! Soy tu asistente personal de eventos AI, ¡aquí para hacer tu experiencia del taller increíble!""",
+            "it": """✨ Ciao! Sono il tuo assistente personale AI per l'evento, qui per rendere incredibile la tua esperienza del workshop!""",
+            "tenglish": """✨ Namaskaram! Nenu mee personal AI Event Assistant ni, mee workshop experience ni amazing ga marchadaniki ikkada unna!"""
+        }
+
+        target_lang = languages[selected_language]
+        welcome_message = welcome_messages.get(target_lang, welcome_messages["en"])
         what_to_know = """🎯 What would you like to know about:\n"""
         welcome_options = """1. 🎓 Workshop Agenda & Schedule
 2. 📅 Important Dates & Deadlines
@@ -339,13 +415,17 @@ st.markdown(chat_html, unsafe_allow_html=True)
 # Chat input
 user_input = st.chat_input("Ask a question about the event...")
 
+# Modify the chat input section
+
 if user_input:
+    target_lang = languages[selected_language]
+    
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": user_input})
     
-    # Generate response
+    # Generate response with translation
     with st.spinner("Thinking..."):
-        response = st.session_state.bot.answer_question(user_input)
+        response = st.session_state.bot.answer_question(user_input, target_lang)
     
     # Add assistant response to chat history
     st.session_state.messages.append({"role": "assistant", "content": response})
