@@ -281,6 +281,11 @@ selected_language = st.sidebar.selectbox(
     index=0
 )
 
+# Add TTS controls to sidebar
+st.sidebar.markdown("---")
+st.sidebar.header("🔊 Text-to-Speech")
+auto_tts = st.sidebar.toggle("Auto-read responses", value=False)
+
 # Load the CSS from the external file
 def load_css(css_file):
     with open(css_file, 'r') as f:
