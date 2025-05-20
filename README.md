@@ -85,25 +85,15 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🏆 Hackathon Submission
-
-This project is submitted for the AI Workshop Hackathon 2025:
-- **Submission Deadline**: May 16, 2025, 11:59 PM
-- **Evaluation Date**: May 17, 2025
-- **Winner Announcement**: May 18, 2025
-
-## 👥 Team
-
-- Batthula Sanjay
-- Rasheed Ali Shaik
 
 ## 🌟 Acknowledgments
 
 Special thanks to:
-- Google Gemini API team
+- Vijendar P Sir
+- Google for Developers Community
 - Streamlit community
-- AI Workshop Hackathon organizers
+- Build with AI Workshop Hackathon organizers
 
 ---
 
-Built with ❤️ for the AI Workshop Hackathon 2025
+Built with ❤️ for the Google Build with AI Workshop Hackathon 2025
