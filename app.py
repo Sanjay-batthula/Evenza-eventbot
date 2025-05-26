@@ -10,6 +10,8 @@ from datetime import datetime, time
 import pytz
 from googletrans import Translator
 import streamlit as st
+import uuid
+from time import sleep
 
 # Load environment variables
 load_dotenv()
@@ -352,6 +354,10 @@ if "bot" not in st.session_state:
             {"role": "assistant", "content": welcome_message + what_to_know + welcome_options + footer}
         )
 
+# Add to initialize session state section
+if "feedback_clicks" not in st.session_state:
+    st.session_state.feedback_clicks = set()
+
 # Add additional CSS to fix spacing issues
 st.markdown("""
 <style>
@@ -390,25 +396,30 @@ for message in st.session_state.messages:
         chat_html += f'<div class="user-message">{html.escape(message["content"])}</div>'
         chat_html += '</div>'
     else:  # assistant
+        message_id = str(uuid.uuid4())  # Generate unique ID for message
         avatar = '<div class="avatar-icon">🤖</div>'
         chat_html += f'<div class="message-container">'
         chat_html += avatar
-        # Format the welcome message to be more compact
         formatted_content = message["content"]
+        
         if "I can help you with the following:" in formatted_content:
-            # Replace the original formatting with HTML formatting
-            formatted_content = formatted_content.replace("Hello! I'm Event bot.\nI can help you with the following:", 
-                                                          "Hello! I'm Event bot.<br><br>I can help you with the following:")
-            formatted_content = formatted_content.replace("\n1. ", "<ol style='margin-top:8px;margin-bottom:8px;padding-left:25px;'><li style='margin-bottom:4px;'>")
-            formatted_content = formatted_content.replace("\n2. ", "</li><li style='margin-bottom:4px;'>")
-            formatted_content = formatted_content.replace("\n3. ", "</li><li style='margin-bottom:4px;'>")
-            formatted_content = formatted_content.replace("\n4. ", "</li><li style='margin-bottom:4px;'>")
-            formatted_content = formatted_content.replace("\n5. ", "</li><li style='margin-bottom:4px;'>")
-            formatted_content = formatted_content.replace("\n6. ", "</li><li style='margin-bottom:4px;'>")
-            formatted_content = formatted_content.replace("\n\nHow can I help you", "</li></ol><br>How can I help you")
+            # Your existing welcome message formatting
             chat_html += f'<div class="bot-message">{formatted_content}</div>'
         else:
             chat_html += f'<div class="bot-message">{html.escape(message["content"])}</div>'
+        
+        # Add feedback buttons
+        if message_id not in st.session_state.feedback_clicks:
+            chat_html += f'''
+                <div class="feedback-container">
+                    <button class="feedback-button" onclick="giveFeedback('{message_id}', 'positive')" title="This was helpful">
+                        <span style="font-size: 1.2em;">👍</span>
+                    </button>
+                    <button class="feedback-button" onclick="giveFeedback('{message_id}', 'negative')" title="This needs improvement">
+                        <span style="font-size: 1.2em;">👎</span>
+                    </button>
+                </div>
+            '''
         chat_html += '</div>'
 
 # Close the container div
@@ -416,6 +427,56 @@ chat_html += '</div>'
 
 # Render the custom chat container
 st.markdown(chat_html, unsafe_allow_html=True)
+
+# Add JavaScript for handling feedback
+st.markdown("""
+<script>
+function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'feedback-notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Fade out and remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transition = 'opacity 0.5s ease-out';
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }, 2500);
+}
+
+function giveFeedback(messageId, type) {
+    // Send feedback to backend
+    const data = {
+        message_id: messageId,
+        feedback_type: type
+    };
+    
+    // Use Streamlit's components API to communicate
+    window.parent.postMessage({
+        type: "streamlit:setComponentValue",
+        data: data
+    }, "*");
+    
+    // Show thank you message
+    const message = type === 'positive' 
+        ? 'Thank you for your positive feedback! 😊'
+        : 'Thank you for your feedback. We\'ll work on improving! 🙏';
+    
+    showNotification(message);
+    
+    // Disable feedback buttons for this message
+    const buttons = event.target.parentElement.querySelectorAll('.feedback-button');
+    buttons.forEach(btn => {
+        btn.style.opacity = '0.3';
+        btn.style.cursor = 'default';
+        btn.disabled = true;
+    });
+}
+</script>
+""", unsafe_allow_html=True)
 
 # Chat input
 user_input = st.chat_input("Ask a question about the event...")

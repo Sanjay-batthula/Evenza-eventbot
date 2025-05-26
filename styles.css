@@ -131,3 +131,68 @@ body {
     line-height: 1.5 !important;
     margin-bottom: 0 !important;
 }
+
+/* Feedback buttons styling */
+.feedback-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    justify-content: flex-start;  /* Changed from flex-end to flex-start */
+    margin-left: 40px;  /* Add left margin to align with message */
+}
+
+.feedback-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: transform 0.2s;
+    opacity: 0.7;  /* Make buttons slightly transparent */
+}
+
+.feedback-button:hover {
+    transform: scale(1.2);
+    opacity: 1;  /* Full opacity on hover */
+}
+
+/* Notification styling */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1000;
+    animation: slideIn 0.5s ease-out;
+}
+
+/* Thank you notification styling */
+.feedback-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    animation: slideIn 0.3s ease-out;
+    font-size: 14px;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
